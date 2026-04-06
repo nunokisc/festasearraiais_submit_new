@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "festasearraiais-submit-new",
+      name: "festasearraiais_submit_new",
       script: "node_modules/.bin/next",
       args: "start",
       cwd: "/var/www/html/festasearraiais/festasearraiais_submit_new",
