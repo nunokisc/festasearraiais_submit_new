@@ -2,11 +2,12 @@
 
 // =============================================================
 // LocationSelects.tsx
-// Cascaded district → city → township selects.
+// Cascaded district → city → township searchable selects.
 // Mirrors the jQuery cascade in legacy PHP index.php.
 // =============================================================
 
 import { FormField } from "./FormField";
+import { SearchableSelect } from "@/components/SearchableSelect";
 import { useLocationCascade } from "@/hooks/useLocationCascade";
 import type { District, FormErrors } from "@/lib/types";
 
@@ -33,121 +34,80 @@ export function LocationSelects({
       (townshipId) => onChange("township", townshipId)
     );
 
-  function handleDistrictChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
-    onChange("district", val);
-    onDistrictChange(val);
+  function handleDistrictChange(value: string) {
+    onChange("district", value);
+    onDistrictChange(value);
   }
 
-  function handleCityChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const val = e.target.value;
-    onCityChange(val);
+  function handleCityChange(value: string) {
+    onCityChange(value);
   }
 
-  function handleTownshipChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    onChange("township", e.target.value);
+  function handleTownshipChange(value: string) {
+    onChange("township", value);
   }
 
-  const selectClass = (hasError: boolean) =>
-    `field-input${hasError ? " error" : ""}`;
+  const districtOptions = districts.map((d) => ({
+    value: String(d.id),
+    label: d.districtName,
+  }));
+
+  const cityOptions = cities.map((c) => ({
+    value: String(c.id),
+    label: c.cityName,
+  }));
+
+  const townshipOptions = townships.map((t) => ({
+    value: String(t.id),
+    label: t.townshipName,
+  }));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {/* District */}
-      <FormField
-        id="district"
-        label="Distrito"
-        required
-        error={errors.district}
-      >
-        <select
+      <FormField id="district" label="Distrito" required error={errors.district}>
+        <SearchableSelect
           id="district"
-          name="district"
-          className={selectClass(!!errors.district)}
+          options={districtOptions}
           value={districtValue}
           onChange={handleDistrictChange}
-          aria-required="true"
+          placeholder="Pesquisar distrito…"
+          hasError={!!errors.district}
+          aria-required={true}
           aria-describedby={errors.district ? "district-error" : undefined}
-        >
-          <option value="">Selecionar distrito</option>
-          {districts.map((d) => (
-            <option key={d.id} value={String(d.id)}>
-              {d.districtName}
-            </option>
-          ))}
-        </select>
+        />
       </FormField>
 
       {/* City */}
-      <FormField
-        id="city"
-        label="Concelho"
-        required
-        error={errors.city}
-      >
-        <div className="relative">
-          <select
-            id="city"
-            name="city"
-            className={selectClass(!!errors.city)}
-            value={cityValue}
-            onChange={handleCityChange}
-            disabled={!districtValue || loadingCities}
-            aria-required="true"
-            aria-describedby={errors.city ? "city-error" : undefined}
-          >
-            <option value="">
-              {loadingCities ? "A carregar…" : "Selecionar concelho"}
-            </option>
-            {cities.map((c) => (
-              <option key={c.id} value={String(c.id)}>
-                {c.cityName}
-              </option>
-            ))}
-          </select>
-          {loadingCities && (
-            <span
-              className="spinner absolute right-3 top-1/2 -translate-y-1/2"
-              aria-hidden="true"
-            />
-          )}
-        </div>
+      <FormField id="city" label="Concelho" required error={errors.city}>
+        <SearchableSelect
+          id="city"
+          options={cityOptions}
+          value={cityValue}
+          onChange={handleCityChange}
+          placeholder="Pesquisar concelho…"
+          disabled={!districtValue}
+          loading={loadingCities}
+          hasError={!!errors.city}
+          aria-required={true}
+          aria-describedby={errors.city ? "city-error" : undefined}
+        />
       </FormField>
 
       {/* Township / Freguesia */}
-      <FormField
-        id="township"
-        label="Freguesia"
-        required
-        error={errors.township}
-      >
-        <div className="relative">
-          <select
-            id="township"
-            name="township"
-            className={selectClass(!!errors.township)}
-            value={townshipValue}
-            onChange={handleTownshipChange}
-            disabled={!cityValue || loadingTownships}
-            aria-required="true"
-            aria-describedby={errors.township ? "township-error" : undefined}
-          >
-            <option value="">
-              {loadingTownships ? "A carregar…" : "Selecionar freguesia"}
-            </option>
-            {townships.map((t) => (
-              <option key={t.id} value={String(t.id)}>
-                {t.townshipName}
-              </option>
-            ))}
-          </select>
-          {loadingTownships && (
-            <span
-              className="spinner absolute right-3 top-1/2 -translate-y-1/2"
-              aria-hidden="true"
-            />
-          )}
-        </div>
+      <FormField id="township" label="Freguesia" required error={errors.township}>
+        <SearchableSelect
+          id="township"
+          options={townshipOptions}
+          value={townshipValue}
+          onChange={handleTownshipChange}
+          placeholder="Pesquisar freguesia…"
+          disabled={!cityValue}
+          loading={loadingTownships}
+          hasError={!!errors.township}
+          aria-required={true}
+          aria-describedby={errors.township ? "township-error" : undefined}
+        />
       </FormField>
     </div>
   );
