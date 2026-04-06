@@ -21,8 +21,9 @@ import type {
   Township,
 } from "./types";
 
+// Server-only: never sent to the browser
 const BACKOFFICE_API =
-  process.env.NEXT_PUBLIC_BACKOFFICE_API_URL ??
+  process.env.BACKOFFICE_API_URL ??
   "https://backoffice-api.festasearraiais.pt";
 
 // ─── Generic fetch helper ─────────────────────────────────────
@@ -49,17 +50,15 @@ export async function getDistricts(): Promise<District[]> {
 
 export async function getCitiesByDistrict(districtId: string | number): Promise<City[]> {
   if (!districtId) return [];
-  const data = await fetchJson<City[]>(
-    `${BACKOFFICE_API}/v1/public/cities/by-district/${districtId}`
-  );
+  // Calls the local Next.js proxy — backoffice URL stays server-side
+  const data = await fetchJson<City[]>(`/api/cities/${districtId}`);
   return data ?? [];
 }
 
 export async function getTownshipsByCity(cityId: string | number): Promise<Township[]> {
   if (!cityId) return [];
-  const data = await fetchJson<Township[]>(
-    `${BACKOFFICE_API}/v1/public/townships/by-city/${cityId}`
-  );
+  // Calls the local Next.js proxy — backoffice URL stays server-side
+  const data = await fetchJson<Township[]>(`/api/townships/${cityId}`);
   return data ?? [];
 }
 

@@ -14,8 +14,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+// Server-only: never sent to the browser
 const BACKOFFICE_API =
-  process.env.NEXT_PUBLIC_BACKOFFICE_API_URL ??
+  process.env.BACKOFFICE_API_URL ??
   "https://backoffice-api.festasearraiais.pt";
 
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY ?? "";
