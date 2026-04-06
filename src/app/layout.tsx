@@ -3,6 +3,8 @@ import { Barlow, Raleway } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 const barlow = Barlow({
   subsets: ["latin"],
@@ -58,6 +60,25 @@ export default function RootLayout({
         className={`${barlow.variable} ${raleway.variable} min-h-screen flex flex-col`}
         style={{ fontFamily: "var(--font-primary)" }}
       >
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
+        {/* AdSense init */}
+        <Script
+          id="adsbygoogle-init"
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_PUB_ID ?? "ca-pub-1083709580213704"}`}
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+        {/* reCAPTCHA v3 */}
+        {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+          <Script
+            id="recaptcha-v3"
+            src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+            strategy="afterInteractive"
+          />
+        )}
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

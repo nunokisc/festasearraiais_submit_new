@@ -108,7 +108,29 @@ export function SubmitForm({ districts, categories }: SubmitFormProps) {
     setStatus("submitting");
     setErrors({});
 
-    const result = await submitEvent(form);
+    // ── reCAPTCHA v3 ────────────────────────────────────
+    let recaptchaToken = "";
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (siteKey && typeof window !== "undefined") {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const grecaptcha = (window as any).grecaptcha;
+        if (grecaptcha) {
+          recaptchaToken = await new Promise<string>((resolve) => {
+            grecaptcha.ready(() => {
+              grecaptcha
+                .execute(siteKey, { action: "submit" })
+                .then(resolve)
+                .catch(() => resolve(""));
+            });
+          });
+        }
+      } catch {
+        // reCAPTCHA unavailable (dev / adblock) — proceed without token
+      }
+    }
+
+    const result = await submitEvent(form, recaptchaToken);
 
     if (result.ok) {
       setStatus("success");
@@ -364,44 +386,39 @@ export function SubmitForm({ districts, categories }: SubmitFormProps) {
         {/* ══ SECÇÃO 4: Coordenadas ════════════════════════ */}
         <SectionCard
           title="4. Coordenadas GPS"
-          description="Usadas para mostrar o evento no mapa. Usa o botão para pesquisar no mapa."
+          description="Usadas para mostrar o evento no mapa."
         >
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-            {/* Map button */}
-            <div>
-              <label className="field-label" id="map-btn-label">
-                Pesquisar no mapa
-              </label>
-              <button
-                type="button"
-                onClick={() => setMapOpen(true)}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[#2d373c] text-[#2d373c] text-sm font-semibold hover:bg-[#2d373c] hover:text-white transition-colors"
-                aria-label="Abrir mapa para selecionar localização"
-              >
-                <svg
-                  aria-hidden="true"
-                  width="18"
-                  height="18"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                Mapa
-              </button>
-            </div>
+          {/* Map button — full-width row above the coordinate fields */}
+          <button
+            type="button"
+            onClick={() => setMapOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-[#2d373c] text-[#2d373c] text-sm font-semibold hover:bg-[#2d373c] hover:text-white transition-colors"
+            aria-label="Abrir mapa para selecionar localização"
+          >
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+            Pesquisar no mapa
+          </button>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Latitude */}
             <FormField
               id="lat"

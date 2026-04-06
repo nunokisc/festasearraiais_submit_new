@@ -84,7 +84,7 @@ export interface SubmitResult {
  * Field names must exactly match the legacy PHP INSERT and the
  * backoffice_api validateEventCreation middleware.
  */
-export async function submitEvent(form: SubmitFormState): Promise<SubmitResult> {
+export async function submitEvent(form: SubmitFormState, recaptchaToken = ""): Promise<SubmitResult> {
   const fd = new FormData();
 
   // Required string fields
@@ -114,8 +114,14 @@ export async function submitEvent(form: SubmitFormState): Promise<SubmitResult> 
     fd.append("image_url", form.image_url.trim());
   }
 
+  // reCAPTCHA token — verified server-side in /api/submit
+  if (recaptchaToken) {
+    fd.append("g-recaptcha-response", recaptchaToken);
+  }
+
   try {
-    const res = await fetch(`${BACKOFFICE_API}/v1/submited/events/event`, {
+    // POST to local Next.js API route which verifies recaptcha + proxies to backoffice_api
+    const res = await fetch("/api/submit", {
       method: "POST",
       body: fd,
       // Do NOT set Content-Type — browser sets multipart boundary automatically
